@@ -9,8 +9,6 @@ using Discord;
 using Discord.WebSocket;
 using System.Timers;
 
-
-
 namespace Daijoubu
 {
     class Daijoubu
@@ -19,7 +17,8 @@ namespace Daijoubu
         internal string Token;
         internal SocketGuild Guild;
         internal ulong LiveRoleId = 441683574333112340;
-        internal Timer Timer = new Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+        internal ulong WeebRoleId = 334669440421462017;
+        internal Timer Timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
 
         public async Task StartAsync()
         {
@@ -29,7 +28,8 @@ namespace Daijoubu
 
             Client = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Debug,
+                MessageCacheSize = 100
             });
 
             await Client.LoginAsync(TokenType.Bot, Token);
@@ -45,7 +45,36 @@ namespace Daijoubu
 
                 return Task.CompletedTask;
             };
+
+            Client.ReactionAdded += AddWeeb;
+            Client.ReactionRemoved += RemoveWeeb;
             await Task.Delay(-1);
+        }
+
+        private Task AddWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            if (cMsg.Id != 549988110423818240) return Task.CompletedTask;
+            var author = Guild.GetUser(reaction.UserId);
+
+            
+
+            if (author.Roles.Any(r => r.Id == WeebRoleId)) return Task.CompletedTask;
+            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Added weeb role to {author}"));
+            author.AddRoleAsync(Guild.GetRole(WeebRoleId));
+
+            return Task.CompletedTask;
+        }
+
+        private Task RemoveWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            if (cMsg.Id != 549988110423818240) return Task.CompletedTask;
+            var author = Guild.GetUser(reaction.UserId);
+
+            if (author.Roles.All(r => r.Id != WeebRoleId)) return Task.CompletedTask;
+            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed weeb role from {author}"));
+            author.RemoveRoleAsync(Guild.GetRole(WeebRoleId));
+
+            return Task.CompletedTask;
         }
 
         private void CheckUsers(object sender, ElapsedEventArgs e)
