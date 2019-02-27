@@ -11,7 +11,7 @@ using System.Timers;
 
 namespace Daijoubu
 {
-    class Daijoubu
+    internal class Daijoubu
     {
         internal DiscordSocketClient Client;
         internal string Token;
@@ -35,11 +35,11 @@ namespace Daijoubu
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
 
-
             Client.Ready += () =>
             {
-                Log(new LogMessage(LogSeverity.Info, "´Daijoubu", $"Logged in as {Client.CurrentUser.Username}#{Client.CurrentUser.Discriminator}." +
-                                                              $"\nServing {Client.Guilds.Count} guilds with a total of {Client.Guilds.Sum(g => g.Users.Count)} online users."));
+                Log(new LogMessage(LogSeverity.Info, "´Daijoubu",
+                    $"Logged in as {Client.CurrentUser.Username}#{Client.CurrentUser.Discriminator}." +
+                    $"\nServing {Client.Guilds.Count} guilds with a total of {Client.Guilds.Sum(g => g.Users.Count)} online users."));
                 Guild = Client.GetGuild(139677590393716737);
                 Timer.Start();
 
@@ -48,31 +48,32 @@ namespace Daijoubu
 
             Client.ReactionAdded += AddWeeb;
             Client.ReactionRemoved += RemoveWeeb;
+
             await Task.Delay(-1);
         }
 
-        private Task AddWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel, SocketReaction reaction)
+        private Task AddWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel,
+            SocketReaction reaction)
         {
             if (cMsg.Id != 549988110423818240) return Task.CompletedTask;
-            var author = Guild.GetUser(reaction.UserId);
+            var reactionAuthor = Guild.GetUser(reaction.UserId);
 
-            
-
-            if (author.Roles.Any(r => r.Id == WeebRoleId)) return Task.CompletedTask;
-            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Added weeb role to {author}"));
-            author.AddRoleAsync(Guild.GetRole(WeebRoleId));
+            if (reactionAuthor.Roles.Any(r => r.Id == WeebRoleId)) return Task.CompletedTask;
+            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Added weeb role to {reactionAuthor}"));
+            reactionAuthor.AddRoleAsync(Guild.GetRole(WeebRoleId));
 
             return Task.CompletedTask;
         }
 
-        private Task RemoveWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel, SocketReaction reaction)
+        private Task RemoveWeeb(Cacheable<IUserMessage, ulong> cMsg, ISocketMessageChannel channel,
+            SocketReaction reaction)
         {
             if (cMsg.Id != 549988110423818240) return Task.CompletedTask;
-            var author = Guild.GetUser(reaction.UserId);
+            var reactionAuthor = Guild.GetUser(reaction.UserId);
 
-            if (author.Roles.All(r => r.Id != WeebRoleId)) return Task.CompletedTask;
-            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed weeb role from {author}"));
-            author.RemoveRoleAsync(Guild.GetRole(WeebRoleId));
+            if (reactionAuthor.Roles.All(r => r.Id != WeebRoleId)) return Task.CompletedTask;
+            Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed weeb role from {reactionAuthor}"));
+            reactionAuthor.RemoveRoleAsync(Guild.GetRole(WeebRoleId));
 
             return Task.CompletedTask;
         }
@@ -125,7 +126,9 @@ namespace Daijoubu
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     break;
             }
-            Console.WriteLine($"{DateTime.Now} [{logmsg.Severity,8}] {logmsg.Source}: {logmsg.Message} {logmsg.Exception}");
+
+            Console.WriteLine(
+                $"{DateTime.Now} [{logmsg.Severity,8}] {logmsg.Source}: {logmsg.Message} {logmsg.Exception}");
             Console.ResetColor();
             return Task.CompletedTask;
         }
