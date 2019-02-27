@@ -18,6 +18,7 @@ namespace Daijoubu
         internal SocketGuild Guild;
         internal ulong LiveRoleId = 441683574333112340;
         internal ulong WeebRoleId = 334669440421462017;
+        internal string GameToTrack = "Factorio";
         internal Timer Timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
 
         public async Task StartAsync()
@@ -86,23 +87,23 @@ namespace Daijoubu
             {
                 if (user.Activity != null && user.Activity.Type == ActivityType.Streaming && user.Activity is Game game)
                 {
-                    if (game.Details == "Factorio" && user.Roles.All(r => r.Id != LiveRoleId))
+                    if (game.Details == GameToTrack && user.Roles.All(r => r.Id != LiveRoleId))
                     {
-                        Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Added live role to {user}"));
                         user.AddRoleAsync(Guild.GetRole(LiveRoleId));
+                        Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Added live role to {user}"));
                     }
 
-                    else if (game.Details != "Factorio" && user.Roles.Any(r => r.Id == LiveRoleId))
+                    else if (game.Details != GameToTrack && user.Roles.Any(r => r.Id == LiveRoleId))
                     {
-                        Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed live role from {user}"));
                         user.RemoveRoleAsync(Guild.GetRole(LiveRoleId));
+                        Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed live role from {user}"));
                     }
                 }
 
                 else if (user.Roles.Any(r => r.Id == LiveRoleId))
                 {
-                    Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed live role from {user}"));
                     user.RemoveRoleAsync(Guild.GetRole(LiveRoleId));
+                    Log(new LogMessage(LogSeverity.Info, "Daijoubu", $"Removed live role from {user}"));
                 }
             }
         }
